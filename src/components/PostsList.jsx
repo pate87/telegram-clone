@@ -2,6 +2,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import NewPost from './NewPost';
 import Post from "./Post";
 import { useState } from 'react';
+import { Button } from 'react-bootstrap';
 
 function PostsList() {
 
@@ -27,6 +28,7 @@ function PostsList() {
                     <Post sender={sender} message={message} />
                 </ListGroup.Item>
             </ListGroup>
+            <Button>Send</Button>
         </>
     );
 }
