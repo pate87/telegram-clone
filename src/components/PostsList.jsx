@@ -24,7 +24,7 @@ function PostsList() {
             <NewPost onMessageChange={messageChangeHandler} onSenderChange={senderChangeHandler} />
             <ListGroup as='ul'>
                 <ListGroup.Item as='li'>
-                    <Post author={sender} body={message} />
+                    <Post sender={sender} message={message} />
                 </ListGroup.Item>
             </ListGroup>
         </>
