@@ -1,18 +1,18 @@
-import { Col, Container, Row } from "react-bootstrap";
-import WalletBtn from "./WalletBtn";
+import { Button, Col, Container, Row } from "react-bootstrap";
 
-function Header() {
+function Header(props) {
+
     return(
-        <Container>
+        <>
             <Row className="align-items-center">
                 <Col>
                     <h1>Logo</h1>
                 </Col>
-                <Col className="align-item-center">
-                    <WalletBtn />
+                <Col className="d-flex justify-content-end">
+                    <Button variant="primary" onClick={props.onWalletAddressClick}>Connect Wallet</Button>
                 </Col>
             </Row>
-        </Container>
+        </>
     );
 }
 
