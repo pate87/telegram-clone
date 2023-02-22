@@ -7,3 +7,4 @@
 ```npm install``` 
 4. ```npm run dev```
 
+- Implement connection to wallet with ethers
