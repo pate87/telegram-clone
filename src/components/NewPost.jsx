@@ -9,7 +9,7 @@ function NewPost(props) {
           <textarea id="body" required rows={3} onChange={props.onMessageChange} /> 
         </p>
         <p>
-          <label htmlFor="name">Your name</label>
+          <label htmlFor="name">BLAAAHHHHH</label>
           <input type="text" id="name" required onChange={props.onSenderChange} />
         </p>
       </form>
