@@ -1,7 +1,7 @@
 import ListGroup from 'react-bootstrap/ListGroup';
 import NewPost from './NewPost';
 import Post from "./Post";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Col, Row, Container } from 'react-bootstrap';
 
 import { ethers } from "ethers";
@@ -29,7 +29,6 @@ function PostsList() {
      const [NFTList, setNFTList] = useState([])
 
     function messageChangeHandler(event) {
-        
         console.log(event.target.value);
         setMessage(event.target.value);
     }
@@ -106,25 +105,39 @@ function PostsList() {
             }
         }
     }
+
+    const sendMessage = async () => {
+        console.log("Running sendMessage");
+        // Get the contract 
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(
+            "0x027778474953c38aEf46ADE7b08357C88773f4af",
+            ABI,
+            signer
+        );
+
+        const addMessage = await contract.addMessage(message, NFT)
+        console.log("addMessage(): " + addMessage);
+        setMessage(addMessage);
+    }
+
+    const chainChanged = () => {
+        // Reloads the website
+        window.location.reload();
+    };
     
     return (
         <>
             <Header onWalletAddressClick={getWalletAddress} />
-            <NewPost onMessageChange={messageChangeHandler} onSenderChange={senderChangeHandler} />
-            <ListGroup as='ul'>
-                <ListGroup.Item as='li'>
-                    <Post sender={currentAccount} message={message} />
-                </ListGroup.Item>
-            </ListGroup>
-            <Button>Send</Button>
-            <Button onClick={getMessages}>Get Messages</Button>
+                    <NewPost onMessageChange={messageChangeHandler} onSenderChange={senderChangeHandler} />
+
+                    <Button className='my-3 me-3' onClick={sendMessage} >Send</Button>
+                    <Button className='my-3' onClick={getMessages}>Get Messages</Button>
             <Container>
                 {allChats.map((item) => (
                     <Row>
-                        {/* <Col> */}
-                            {/* <Chat image={item.image} text={item.sentMessage} data={`${item.sendFrom} NFT ${item.nftId}`} /> */}
                             <Chat image={item.image} text={item.sentMessage} data={`NFT: ${item.nftId}`} />
-                        {/* </Col> */}
                     </Row>
                 ))}
             </Container>
