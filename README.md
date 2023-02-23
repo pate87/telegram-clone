@@ -7,3 +7,6 @@
 ```npm install``` 
 4. ```npm run dev```
 
+- Chat is now sending to and receiving messages from blockchain test chat contract.
+
+- Implemented the XMTP API package

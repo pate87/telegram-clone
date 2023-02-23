@@ -10,6 +10,8 @@ import Chat from './Chat';
 
 import ABI from './ABI.json'
 
+import { Client } from '@xmtp/xmtp-js'
+
 function PostsList() {
 
     // const [message, setMessage] = useState('');
