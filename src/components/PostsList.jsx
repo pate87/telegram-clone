@@ -130,6 +130,7 @@ function PostsList() {
     return (
         <>
             <Header onWalletAddressClick={getWalletAddress} />
+            { currentAccount ? <p onShowAddress={getWalletAddress}>{`Patricks address is: ${currentAccount}`}</p> : ""}
                     <NewPost onMessageChange={messageChangeHandler} onSenderChange={senderChangeHandler} />
 
                     <Button className='my-3 me-3' onClick={sendMessage} >Send</Button>
