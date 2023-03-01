@@ -1,148 +1,146 @@
-import ListGroup from 'react-bootstrap/ListGroup';
-import NewPost from './NewPost';
-import Post from "./Post";
-import { useEffect, useState } from 'react';
-import { Button, Col, Row, Container } from 'react-bootstrap';
+import React, { useEffect, useState } from "react";
+import { Button } from 'react-bootstrap';
+// Web3Modal
+import {
+  EthereumClient,
+  modalConnectors,
+  walletConnectProvider,
+} from "@web3modal/ethereum";
+import { Web3Modal, useWeb3Modal, Web3Button } from "@web3modal/react";
 
-import { ethers } from "ethers";
-import Header from './Header';
-import Chat from './Chat';
+// Wagmi
+import { configureChains, createClient, useAccount } from "wagmi";
+import { mainnet, polygon } from "wagmi/chains";
+import { fetchSigner } from '@wagmi/core';
 
-import ABI from './ABI.json'
+// Import XMTP Package
+import { Client, DecodedMessage, SortDirection } from "@xmtp/xmtp-js";
 
-function PostsList() {
+// Test Address
+const PEER_ADDRESS = "0x937C0d4a6294cdfa575de17382c7076b579DC176"; //bot address
 
-    // const [message, setMessage] = useState('');
+// Wagmi Chains
+const chains = [ mainnet, polygon];
+// Wagmi client
+const { provider } = configureChains(chains, [
+  walletConnectProvider({ projectId: "3be6152ca71d7cbef03545dc2da2e605" }),
+]);
+const wagmiClient = createClient({
+  autoConnect: true,
+  connectors: modalConnectors({ appName: "web3Modal", chains }),
+  provider,
+});
+// Web3Modal Ethereum Client
+const ethereumClient = new EthereumClient(wagmiClient, chains);
+// type MessageListProps = {
+//   msg: DecodedMessage[];
+// };
 
-    // const [sender, setSender] = useState('');
+// // const MessageList = ({ msg }) => {
+// //   return (
+// //     <View>
+// //       {msg.map((message, index) => (
+// //         <Text key={index}>{message.content}</Text>
+// //       ))}
+// //     </View>
+// //   );
+// // };
 
-    const [currentAccount, setCurrentAccount] = useState(null);
+// const MessageList = ({ msg }) => {
+//   return (
+//     <ul>
+//       {msg.map((message, index) => (
+//         <li key={index}>{message.content}</li>
+//       ))}
+//     </ul>
+//   );
+// };
 
-     /**
-     * @pagination gets kinda a number of a @page to display more messages
-     * @NFT and @NFTList variable gets called on @getNFTs function
-     */
-     const [message, setMessage] = useState("");
-     const [allChats, setAllChats] = useState([]);
-     const [pagination, setPagination] = useState(0);
-     const [NFT, setNFT] = useState(0);
-     const [NFTList, setNFTList] = useState([])
+const App = () => {
+  // Connect Account to wagmi account
+  const { isConnected } = useAccount()
 
-    function messageChangeHandler(event) {
-        console.log(event.target.value);
-        setMessage(event.target.value);
-    }
+  // Create empty messages array
+  const [messages, setMessages] = useState([]);
 
-    function senderChangeHandler(event) {
-        setSender(event.target.value);
-    }
+  // setClient from @initXmtp
+  const [client, setClient] = useState();
 
-    const getWalletAddress = async () => {
-        if(window.ethereum) {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts");
-            const currentAddress = await provider.getSigner().getAddress();
+  // set the xmtp Client Address which signed the xmtp api
+  const [xmtpClientAddress, setXmtpClientAddress] = useState();
 
-            console.log(currentAddress);
-            setCurrentAccount(currentAddress);
-        }
-    }
+  // Initiate the xmtp()
+  const initXmtp = async function () {
 
-    const getMessages = async () => {
-        // Get the contract 
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(
-            "0x027778474953c38aEf46ADE7b08357C88773f4af",
-            ABI,
-            signer
-        );
+    // Calls the @wagmi signer 
+    const signer = await fetchSigner();
 
-        /**
-         * Setting up a function to get the switched NFT token from the @onChange @nftId
-         */
-        // getNFTs();
-        // Get the current wallet address 
-        const currentAddress = provider.getSigner().getAddress();
-        console.log("Show current wallet address: " + currentAddress);
+    // Client class initiates connection to the XMTP network with a walletaddress (signer)
+    const xmtp = await Client.create(signer, { env: "production" });
 
-        const amountOfNFTs = await contract.balanceOf(currentAddress);
-        console.log("Show balanceOf current wallet address: " + amountOfNFTs);
-
-        for(let i = 0; i < amountOfNFTs; i++) {
-            const currentNFT = await contract.tokenOfOwnerByIndex(currentAddress, i);
-            setNFTList(old => [...old, currentNFT]);
-            console.log("Show current NFT: " + currentNFT);
-        }
-
-        /**
-         * @page the number of how many messages gets displayed on a @page
-         * @totalMessages get all the messages from the blockchin
-         * @starting counts the messages back
-         */
-
-        const totalMessages = await contract.totalMessages();
-        console.log("Running totalMessages:");
-        console.log(totalMessages);
-
-        const page = 10;
-        // const pagination = 4;
-        // const totalMessages = 150
-        const starting = totalMessages - (page * pagination) - 1;
-
-        setAllChats([]);
-
-        /**
-         * Loops through all the @totalMessages from the blockchain and push the @currentMessage (i) to the array @setAllChats
-         */
-        for(let i = starting; i > starting - page; i--) {
-            console.log("Show loop from totalMessages: " + i);
-            if(i >= 0) {
-                const currentMessage = await contract.Messages(i);
-                console.log("Running currentMessages:");
-                console.log(currentMessage);
-                setAllChats(prevChat => [...prevChat, currentMessage]);
-            }
-        }
-    }
-
-    const sendMessage = async () => {
-        console.log("Running sendMessage");
-        // Get the contract 
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(
-            "0x027778474953c38aEf46ADE7b08357C88773f4af",
-            ABI,
-            signer
-        );
-
-        const addMessage = await contract.addMessage(message, NFT)
-        console.log("addMessage(): " + addMessage);
-        setMessage(addMessage);
-    }
-
-    const chainChanged = () => {
-        // Reloads the website
-        window.location.reload();
-    };
-    
-    return (
-        <>
-            <Header onWalletAddressClick={getWalletAddress} />
-                    <NewPost onMessageChange={messageChangeHandler} onSenderChange={senderChangeHandler} />
-
-                    <Button className='my-3 me-3' onClick={sendMessage} >Send</Button>
-                    <Button className='my-3' onClick={getMessages}>Get Messages</Button>
-            <Container>
-                {allChats.map((item) => (
-                    <Row>
-                            <Chat image={item.image} text={item.sentMessage} data={`NFT: ${item.nftId}`} />
-                    </Row>
-                ))}
-            </Container>
-        </>
+    /**
+    * Conversations allows you to view ongoing 1:1 messaging sessions with another wallet
+    */
+    // Creates a new conversatoin (newConversation) with the given address to call - example @PEER_ADDRESS
+    const conversation = await xmtp.conversations.newConversation(
+      PEER_ADDRESS
     );
+
+    const messages = await conversation.messages({
+      direction: SortDirection.SORT_DIRECTION_DESCENDING,
+    });
+
+    setClient(conversation);
+    setMessages(messages);
+    setXmtpClientAddress(xmtp.address);
+  };
+
+  useEffect(() => {
+    if (client && xmtpClientAddress) {
+      const streamMessages = async () => {
+        const newStream = await client.streamMessages();
+        for await (const msg of newStream) {
+          setMessages((prevMessages) => {
+            const messages = [...prevMessages];
+            messages.unshift(msg);
+            return messages;
+          });
+        }
+      };
+      streamMessages();
+    }
+  }, [client, xmtpClientAddress]);
+
+  const onSendMessage = async () => {
+    const message = "gm XMTP bot!";
+    await client.send(message);
+  };
+
+  const MessageList = ({ msg }) => {
+    return (
+      <ul>
+        {msg.map((message, index) => (
+          <li key={index}>{message.content}</li>
+        ))}
+      </ul>
+    );
+  };
+
+  return (
+    <div className="App">
+      <Web3Button />
+      <Web3Modal projectId="3be6152ca71d7cbef03545dc2da2e605" ethereumClient={ethereumClient} />
+      {isConnected && xmtpClientAddress && (
+        <>
+          <MessageList msg={messages} />
+          <Button onClick={onSendMessage}>Send GM</Button>
+        </>
+      )}
+      {isConnected && !xmtpClientAddress && (
+        <Button onClick={initXmtp}>Connect to XMTP</Button>
+      )}
+    </div>
+  );
 }
 
-export default PostsList;
+export default App;
