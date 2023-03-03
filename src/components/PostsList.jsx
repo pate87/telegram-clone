@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Button } from 'react-bootstrap';
+import { Form, FormControl, Button, ListGroup } from 'react-bootstrap';
+import Header from './Header';
 // Web3Modal
 import {
   EthereumClient,
@@ -60,8 +61,14 @@ const App = () => {
   // Connect Account to wagmi account
   const { isConnected } = useAccount()
 
+  // Set recipient address
+  const [recipientAddress, setRecipientAddress] = useState('');  
+
   // Create empty messages array
   const [messages, setMessages] = useState([]);
+
+  // Set the message
+  const [message, setMessage] = useState('');
 
   // setClient from @initXmtp
   const [client, setClient] = useState();
@@ -69,7 +76,9 @@ const App = () => {
   // set the xmtp Client Address which signed the xmtp api
   const [xmtpClientAddress, setXmtpClientAddress] = useState();
 
-  // Initiate the xmtp()
+  /**
+   * Initiate the xmtp()
+   */
   const initXmtp = async function () {
 
     // Calls the @wagmi signer 
@@ -83,7 +92,7 @@ const App = () => {
     */
     // Creates a new conversatoin (newConversation) with the given address to call - example @PEER_ADDRESS
     const conversation = await xmtp.conversations.newConversation(
-      PEER_ADDRESS
+        recipientAddress
     );
 
     const messages = await conversation.messages({
@@ -112,7 +121,7 @@ const App = () => {
   }, [client, xmtpClientAddress]);
 
   const onSendMessage = async () => {
-    const message = "gm XMTP bot!";
+    // const message = "gm XMTP bot!";
     await client.send(message);
   };
 
@@ -128,17 +137,40 @@ const App = () => {
 
   return (
     <div className="App">
+        <Header />
       <Web3Button />
       <Web3Modal projectId="3be6152ca71d7cbef03545dc2da2e605" ethereumClient={ethereumClient} />
       {isConnected && xmtpClientAddress && (
         <>
           <MessageList msg={messages} />
-          <Button onClick={onSendMessage}>Send GM</Button>
+          {/* <Button onClick={onSendMessage}>Send GM</Button> */}
         </>
       )}
       {isConnected && !xmtpClientAddress && (
         <Button onClick={initXmtp}>Connect to XMTP</Button>
       )}
+       <Form className="mb-3">
+        <Form.Group>
+          <FormControl
+            type="text"
+            placeholder="Enter recipient wallet address"
+            value={recipientAddress}
+            onChange={(e) => setRecipientAddress(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group>
+          <FormControl
+            as="textarea"
+            rows={3}
+            placeholder="Enter message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+        </Form.Group>
+        <Button variant="primary" onClick={onSendMessage}>Send</Button>
+        {/* <Button variant="secondary" onClick={loadMessages}>Load Messages</Button> */}
+      </Form>
+      {/* <ListGroup></ListGroup> */}
     </div>
   );
 }
