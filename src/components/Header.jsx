@@ -9,7 +9,7 @@ function Header(props) {
                     <h1>Logo</h1>
                 </Col>
                 <Col className="d-flex justify-content-end">
-                    <Button variant="primary" onClick={props.onWalletAddressClick}>Connect Wallet</Button>
+                    {/* <Button variant="primary" onClick={props.onWalletAddressClick}>Connect Wallet</Button> */}
                 </Col>
             </Row>
         </>
