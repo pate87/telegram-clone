@@ -33,13 +33,13 @@ npm list
 npm run dev
 ```
 
-## The running app
+# The running app
 
-### Phase 1
+## Phase 1
 The app should work with a test chat blockchain contract on the Goerli testnet.
 The chat contract sends and receive messages through blockchain.
 
-### Phase 2
+## Phase 2
 The app is connects to the xmtp api and sends and recieve messages from and to the test bot contract.
 The app uses the "GM" turoial from the xmtp site
 
@@ -50,3 +50,19 @@ The app uses the "GM" turoial from the xmtp site
 Next steps are
 - should work with other wallet connection functions as written in the test chat
 - send and receive messages from and to other real wallets
+
+### Try out - test
+- Create a copy of xmtp quickstart react app
+
+## Phase 3
+- Create contexts folder
+- Copy WalletContext into contexts folder
+
+- It looks that the wallet 0x79...41E2 receives the messages which come from 0x4e...60E8 but not the other way around.
+
+- Also The dApp works in the Vivaldi browser with "Read Messages" btn however in the Brave browser the btn "Read Messages" is missing
+
+- Furthermore the dApp currently works kinda like a light swichter.
+
+### TODO
+- Look futher into React and the "quick-start-react" dApp from XMTP
