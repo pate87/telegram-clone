@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, FormControl, Button, ListGroup } from 'react-bootstrap';
 import Header from './Header';
+import AddressInput from './AddressInput';
 
 // Web3Modal
 import {
@@ -53,6 +54,15 @@ const PostsList = () => {
 
     // set the xmtp Client Address which signed the xmtp api
     const [xmtpClientAddress, setXmtpClientAddress] = useState();
+
+    // Set new message  
+    const [isNewMsg, setIsNewMsg] = useState(false);
+
+    // Set error message
+    const [errorMsg, setErrorMsg] = useState("");
+
+
+    const [selectedConvo, setSelectedConvo] = useState(null);
 
     /**
      * Initiate the xmtp()
