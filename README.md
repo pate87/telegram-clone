@@ -72,3 +72,7 @@ Next steps are
 - Create utils folder and copy the utils file from "xmtp-quickstart-react"
 
 - Copy the components "Input" and "AddressInput" from "xmtp-quickstart-react"
+
+## Phase 5
+
+- Add Tailwind Package
