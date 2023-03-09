@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Form, FormControl, Button, ListGroup } from 'react-bootstrap';
 import Header from './Header';
+
 // Web3Modal
 import {
-  EthereumClient,
-  modalConnectors,
-  walletConnectProvider,
+    EthereumClient,
+    modalConnectors,
+    walletConnectProvider,
 } from "@web3modal/ethereum";
 import { Web3Modal, useWeb3Modal, Web3Button } from "@web3modal/react";
 
@@ -21,158 +22,136 @@ import { Client, DecodedMessage, SortDirection } from "@xmtp/xmtp-js";
 const PEER_ADDRESS = "0x937C0d4a6294cdfa575de17382c7076b579DC176"; //bot address
 
 // Wagmi Chains
-const chains = [ mainnet, polygon];
+const chains = [mainnet, polygon];
 // Wagmi client
 const { provider } = configureChains(chains, [
-  walletConnectProvider({ projectId: "3be6152ca71d7cbef03545dc2da2e605" }),
+    walletConnectProvider({ projectId: "3be6152ca71d7cbef03545dc2da2e605" }),
 ]);
 const wagmiClient = createClient({
-  autoConnect: true,
-  connectors: modalConnectors({ appName: "web3Modal", chains }),
-  provider,
+    autoConnect: true,
+    connectors: modalConnectors({ appName: "web3Modal", chains }),
+    provider,
 });
 // Web3Modal Ethereum Client
 const ethereumClient = new EthereumClient(wagmiClient, chains);
-// type MessageListProps = {
-//   msg: DecodedMessage[];
-// };
 
-// // const MessageList = ({ msg }) => {
-// //   return (
-// //     <View>
-// //       {msg.map((message, index) => (
-// //         <Text key={index}>{message.content}</Text>
-// //       ))}
-// //     </View>
-// //   );
-// // };
+const PostsList = () => {
+    // Connect Account to wagmi account
+    const { isConnected } = useAccount()
 
-// const MessageList = ({ msg }) => {
-//   return (
-//     <ul>
-//       {msg.map((message, index) => (
-//         <li key={index}>{message.content}</li>
-//       ))}
-//     </ul>
-//   );
-// };
+    // Set recipient address
+    const [recipientAddress, setRecipientAddress] = useState('');
 
-const App = () => {
-  // Connect Account to wagmi account
-  const { isConnected } = useAccount()
+    // Create empty messages array
+    const [messages, setMessages] = useState([]);
 
-  // Set recipient address
-  const [recipientAddress, setRecipientAddress] = useState('');  
+    // Set the message
+    const [message, setMessage] = useState('');
 
-  // Create empty messages array
-  const [messages, setMessages] = useState([]);
+    // setClient from @initXmtp
+    const [client, setClient] = useState();
 
-  // Set the message
-  const [message, setMessage] = useState('');
-
-  // setClient from @initXmtp
-  const [client, setClient] = useState();
-
-  // set the xmtp Client Address which signed the xmtp api
-  const [xmtpClientAddress, setXmtpClientAddress] = useState();
-
-  /**
-   * Initiate the xmtp()
-   */
-  const initXmtp = async function () {
-
-    // Calls the @wagmi signer 
-    const signer = await fetchSigner();
-
-    // Client class initiates connection to the XMTP network with a walletaddress (signer)
-    const xmtp = await Client.create(signer, { env: "production" });
+    // set the xmtp Client Address which signed the xmtp api
+    const [xmtpClientAddress, setXmtpClientAddress] = useState();
 
     /**
-    * Conversations allows you to view ongoing 1:1 messaging sessions with another wallet
-    */
-    // Creates a new conversatoin (newConversation) with the given address to call - example @PEER_ADDRESS
-    const conversation = await xmtp.conversations.newConversation(
-        recipientAddress
-    );
+     * Initiate the xmtp()
+     */
+    const initXmtp = async function () {
 
-    const messages = await conversation.messages({
-      direction: SortDirection.SORT_DIRECTION_DESCENDING,
-    });
+        // Calls the @wagmi signer 
+        const signer = await fetchSigner();
 
-    setClient(conversation);
-    setMessages(messages);
-    setXmtpClientAddress(xmtp.address);
-  };
+        // Client class initiates connection to the XMTP network with a walletaddress (signer)
+        const xmtp = await Client.create(signer, { env: "production" });
 
-  useEffect(() => {
-    if (client && xmtpClientAddress) {
-      const streamMessages = async () => {
-        const newStream = await client.streamMessages();
-        for await (const msg of newStream) {
-          setMessages((prevMessages) => {
-            const messages = [...prevMessages];
-            messages.unshift(msg);
-            return messages;
-          });
+        /**
+        * Conversations allows you to view ongoing 1:1 messaging sessions with another wallet
+        */
+        // Creates a new conversatoin (newConversation) with the given address to call - example @PEER_ADDRESS
+        const conversation = await xmtp.conversations.newConversation(
+            recipientAddress
+        );
+
+        const messages = await conversation.messages({
+            direction: SortDirection.SORT_DIRECTION_DESCENDING,
+        });
+
+        setClient(conversation);
+        setMessages(messages);
+        setXmtpClientAddress(xmtp.address);
+    };
+
+    useEffect(() => {
+        if (client && xmtpClientAddress) {
+            const streamMessages = async () => {
+                const newStream = await client.streamMessages();
+                for await (const msg of newStream) {
+                    setMessages((prevMessages) => {
+                        const messages = [...prevMessages];
+                        messages.unshift(msg);
+                        return messages;
+                    });
+                }
+            };
+            streamMessages();
         }
-      };
-      streamMessages();
-    }
-  }, [client, xmtpClientAddress]);
+    }, [client, xmtpClientAddress]);
 
-  const onSendMessage = async () => {
-    // const message = "gm XMTP bot!";
-    await client.send(message);
-  };
+    const onSendMessage = async () => {
+        // const message = message;
+        await client.send(message);
+    };
 
-  const MessageList = ({ msg }) => {
+    const MessageList = ({ msg }) => {
+        return (
+            <ul>
+                {msg.map((message, index) => (
+                    <li key={index}>{message.content}</li>
+                ))}
+            </ul>
+        );
+    };
+
     return (
-      <ul>
-        {msg.map((message, index) => (
-          <li key={index}>{message.content}</li>
-        ))}
-      </ul>
+        <div className="App">
+            <Header />
+            {/* <Button onClick={connectWallet}>Connect Wallet</Button> */}
+            {/* <Web3Button /> */}
+            <Web3Modal projectId="3be6152ca71d7cbef03545dc2da2e605" ethereumClient={ethereumClient} />
+            {isConnected && xmtpClientAddress && (
+                <>
+                    <MessageList msg={messages} />
+                </>
+            )}
+            {isConnected && !xmtpClientAddress && (
+                // <Button onClick={initXmtp}>Connect to XMTP</Button>
+                <Button onClick={initXmtp}>Read Messages</Button>
+            )}
+            <Form className="mb-3">
+                <Form.Group>
+                    <FormControl
+                        type="text"
+                        placeholder="Enter recipient wallet address"
+                        value={recipientAddress}
+                        onChange={(e) => setRecipientAddress(e.target.value)}
+                    />
+                </Form.Group>
+                <Form.Group>
+                    <FormControl
+                        as="textarea"
+                        rows={3}
+                        placeholder="Enter message"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                    />
+                </Form.Group>
+                <Button variant="primary" onClick={onSendMessage}>Send</Button>
+                {/* <Button variant="secondary" onClick={loadMessages}>Load Messages</Button> */}
+            </Form>
+            {/* <ListGroup></ListGroup> */}
+        </div>
     );
-  };
-
-  return (
-    <div className="App">
-        <Header />
-      <Web3Button />
-      <Web3Modal projectId="3be6152ca71d7cbef03545dc2da2e605" ethereumClient={ethereumClient} />
-      {isConnected && xmtpClientAddress && (
-        <>
-          <MessageList msg={messages} />
-          {/* <Button onClick={onSendMessage}>Send GM</Button> */}
-        </>
-      )}
-      {isConnected && !xmtpClientAddress && (
-        <Button onClick={initXmtp}>Connect to XMTP</Button>
-      )}
-       <Form className="mb-3">
-        <Form.Group>
-          <FormControl
-            type="text"
-            placeholder="Enter recipient wallet address"
-            value={recipientAddress}
-            onChange={(e) => setRecipientAddress(e.target.value)}
-          />
-        </Form.Group>
-        <Form.Group>
-          <FormControl
-            as="textarea"
-            rows={3}
-            placeholder="Enter message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-        </Form.Group>
-        <Button variant="primary" onClick={onSendMessage}>Send</Button>
-        {/* <Button variant="secondary" onClick={loadMessages}>Load Messages</Button> */}
-      </Form>
-      {/* <ListGroup></ListGroup> */}
-    </div>
-  );
 }
 
-export default App;
+export default PostsList;
