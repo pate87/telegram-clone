@@ -66,3 +66,9 @@ Next steps are
 
 ### TODO
 - Look futher into React and the "quick-start-react" dApp from XMTP
+
+## Phase 4
+
+- Create utils folder and copy the utils file from "xmtp-quickstart-react"
+
+- Copy the components "Input" and "AddressInput" from "xmtp-quickstart-react"
